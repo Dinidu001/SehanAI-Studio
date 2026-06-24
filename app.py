@@ -8,7 +8,7 @@ import os
 GOOGLE_API_KEY = "AQ.Ab8RN6LRenzHgO-xVwaxIzcCRz9JlaFQOHp8i_9bZaGXsr_v_g"
 
 # Configure the API Key
-if GOOGLE_API_KEY and GOOGLE_API_KEY != "ඔයාගේ_API_KEY_එක_මෙතනට_දාන්න":
+if GOOGLE_API_KEY and GOOGLE_API_KEY != "AQ.Ab8RN6LRenzHgO-xVwaxIzcCRz9JlaFQOHp8i_9bZaGXsr_v_g":
     genai.configure(api_key=GOOGLE_API_KEY)
 else:
     st.error("Please enter your Google API Key inside the 'app.py' file.")
