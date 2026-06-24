@@ -4,10 +4,21 @@ from PIL import Image
 import os
 
 # --- Configuration ---
-# Your Working Gemini API Key
-GOOGLE_API_KEY = "AQ.Ab8RN6LRenzHgO-xVwaxIzcCRz9JlaFQOHp8i_9bZaGXsr_v_g"
+# 1. Streamlit Cloud Secrets වලින් හෝ Local Environment එකෙන් Key එක සෙවීම
+GOOGLE_API_KEY = None
 
-# Configure the Gemini API directly without faulty conditions
+try:
+    # st.secrets තිබේ නම් සහ එය ක්‍රැෂ් නොවේ නම් පමණක් Key එක ලබා ගනී
+    if st.secrets and "GOOGLE_API_KEY" in st.secrets:
+        GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+except Exception:
+    pass
+
+# 2. Secrets වල නැත්නම් කෙලින්ම ඔයාගේ අලුත් API Key එක පාවිච්චි කිරීම (PC එකේදී වැඩ කිරීමට)
+if not GOOGLE_API_KEY:
+    GOOGLE_API_KEY = "AQ.Ab8RN6IzT2K_13wEJPS8iX1hCyve91IsptxFd2rzJQoQDXMFZQ"
+
+# Gemini API එක Configure කිරීම
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Setup Streamlit Page Configuration
