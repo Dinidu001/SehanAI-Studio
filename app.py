@@ -4,98 +4,141 @@ from PIL import Image
 import os
 
 # --- Configuration ---
-# 1. ඔයා ලබාගත්තු Gemini API Key එක මෙතනට දාන්න
+# Your Working Gemini API Key
 GOOGLE_API_KEY = "AQ.Ab8RN6LRenzHgO-xVwaxIzcCRz9JlaFQOHp8i_9bZaGXsr_v_g"
 
-# API Key එක Configure කිරීම
-if GOOGLE_API_KEY and GOOGLE_API_KEY != "AQ.Ab8RN6LRenzHgO-xVwaxIzcCRz9JlaFQOHp8i_9bZaGXsr_v_g":
-    genai.configure(api_key=GOOGLE_API_KEY)
-else:
-    st.error("කරුණාකර 'app.py' ෆයිල් එකේ ඔබේ Google API Key එක ඇතුළත් කරන්න.")
-    st.stop()
+# Configure the Gemini API directly without faulty conditions
+genai.configure(api_key=GOOGLE_API_KEY)
 
-# 2. Streamlit Page එක සකස් කිරීම
+# Setup Streamlit Page Configuration
 st.set_page_config(
     page_title="SehanAI Studio", 
     page_icon="✨", 
     layout="centered"
 )
 
+# --- 🎨 CUSTOM CSS FOR FIXED BEAUTIFUL UI ---
+st.markdown("""
+    <style>
+        /* Main background color */
+        .stApp {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            color: #f8fafc;
+        }
+        
+        /* Sidebar styling */
+        [data-testid="stSidebar"] {
+            background-color: #020617 !important;
+            border-right: 1px solid #334155;
+        }
+        
+        /* Title styling */
+        h1 {
+            color: #38bdf8 !important;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            text-align: center;
+            text-shadow: 0px 4px 12px rgba(56, 189, 248, 0.2);
+        }
+        
+        h3 {
+            color: #94a3b8 !important;
+            text-align: center;
+            font-size: 1.1rem !important;
+            margin-bottom: 2rem;
+        }
+
+        /* Custom styling for chat input */
+        .stChatInputContainer {
+            background-color: #1e293b !important;
+            border-radius: 12px !important;
+            border: 1px solid #334155 !important;
+        }
+        
+        /* Button styling */
+        .stButton>button {
+            background: linear-gradient(90deg, #0ea5e9, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 12px rgba(37, 99, 235, 0.4);
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- AI Models ---
 CHAT_MODEL = "gemini-2.5-flash"
 
 # --- SIDEBAR (App Info & Image Uploader) ---
 with st.sidebar:
-    st.title("✨ SehanAI Studio")
-    st.markdown("Your Ultimate Multilingual & Vision AI Companion.")
+    st.markdown("<h2 style='color: #38bdf8; text-align: center;'>✨ SehanAI Studio</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Your Ultimate Multilingual & Vision AI Companion.</p>", unsafe_allow_html=True)
+    
+    st.markdown("---")
     st.subheader("👨‍💻 Founder & Developer:")
     st.info("**M.K.D.Sehan**")
     
     st.markdown("---")
     
-    # 📸 Image Upload කරන්න Uploader එක
+    # 📸 Image Uploader Section
     st.subheader("📸 Upload Image")
     uploaded_file = st.file_uploader(
         "Upload an image to analyze or discuss with AI:", 
         type=["jpg", "jpeg", "png"]
     )
     
-    # Upload කල ඡායාරූපය Preview එකක් පෙන්වීම
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         st.image(image, caption="Uploaded Image", use_column_width=True)
         st.success("Image uploaded successfully!")
     else:
-        st.info("You can upload an image and ask questions or give prompts to edit/analyze it.")
+        st.info("You can upload an image here to ask questions, analyze it, or get editing ideas.")
 
 # --- MAIN PAGE (Chat Interface) ---
-st.title("✨ SehanAI Studio")
-st.subheader("Developed by M.K.D.Sehan")
-st.write("Welcome! Ask anything in **Sinhala** or **English**. You can also upload images to process.")
+st.markdown("<h1>✨ SehanAI Studio</h1>", unsafe_allow_html=True)
+st.markdown("<h3>Developed by M.K.D.Sehan</h3>", unsafe_allow_html=True)
 
-# 3. AI එක වැඩ කල යුතු ආකාරය (System Instruction)
+# AI System Instructions
 system_prompt = (
     "You are SehanAI Studio, a highly advanced and friendly AI assistant developed by M.K.D.Sehan. "
-    "You can engage in conversation fluently in both Sinhala and English, responding in the same language as the user. "
+    "You can engage in conversation fluently in both Sinhala and English, always responding in the same language as the user. "
     "You are capable of analyzing and discussing images provided by the user. If an image is provided and the user "
     "asks to change or edit it, give them detailed, creative prompt instructions or explanations on how to achieve it. "
     "Always maintain a smart, polite, and helpful tone."
 )
 
-# 4. Chat History එක මතක තබා ගැනීමට (Session State)
+# Initialize Chat History
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 5. කලින් කරපු Chat ඉතිහාසය Screen එකේ පෙන්වීම
+# Display Previous Chat History
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if "image" in message:
             st.image(message["image"], use_column_width=True)
 
-# 6. User ගෙන් ප්‍රශ්නය සහ/හෝ ඡායාරූපය ලබාගැනීම
-prompt = st.chat_input("Ask SehanAI anything... / මෙතන Type කරන්න...")
+# Get User Input
+prompt = st.chat_input("Ask SehanAI anything...")
 
-# ප්‍රශ්නයක් ඇහුවොත්
 if prompt:
-    # 6.1. User ප්‍රශ්නය screen එකේ පෙන්වීම
+    # Display User Message
     with st.chat_message("user"):
         st.markdown(prompt)
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, use_column_width=True)
-            st.session_state.messages.append({
-                "role": "user", 
-                "content": prompt, 
-                "image": image
-            })
+            st.session_state.messages.append({"role": "user", "content": prompt, "image": image})
         else:
-            st.session_state.messages.append({
-                "role": "user", 
-                "content": prompt
-            })
+            st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # 7. Gemini මොඩල් එක හරහා පිළිතුර ලබාගැනීම
+    # Fetch Response from Gemini Model
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         
@@ -113,16 +156,12 @@ if prompt:
             full_response = response.text
             
             message_placeholder.markdown(full_response)
-            st.session_state.messages.append({
-                "role": "assistant", 
-                "content": full_response
-            })
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
             
         except Exception as e:
             st.error(f"Error: {e}")
             if "429" in str(e):
                 st.warning("Rate limit exceeded. Please wait 60 seconds before sending another message.")
 
-# --- පිටුවේ යටින්ම (Footer) ---
-st.markdown("---")
-st.caption("🚀 Powered by Gemini | Developed with ❤️ by **M.K.D.Sehan**")
+# --- FOOTER ---
+st.markdown("<br><hr><p style='text-align: center; color: #64748b;'>🚀 Powered by Gemini | Developed with ❤️ by <b>M.K.D.Sehan</b></p>", unsafe_allow_html=True)
